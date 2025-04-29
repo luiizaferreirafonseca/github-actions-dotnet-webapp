@@ -31,7 +31,7 @@ jobs:
         run: dotnet test github4women/github4women.csproj --configuration Release
 
   publish:
-    name: Empacotar e Verificar Qualidade
+    name:  Verificar Qualidade
     needs: build
     runs-on: ubuntu-latest
 
@@ -42,7 +42,7 @@ jobs:
       - name: Configurar o .NET
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: '8.0.x'  # Garantir que a versão do .NET seja a mesma em ambas as etapas
+          dotnet-version: '8.0.x'  
 
       - name: Restaurar dependências antes de formatar
         run: dotnet restore github4women/github4women.csproj
@@ -56,5 +56,5 @@ jobs:
       - name: Limpar arquivos temporários
         run: rm -rf github4women/bin github4women/obj
 
-      - name: Empacotar aplicação para deploy
+      - name: Preparar aplicação para deploy
         run: dotnet publish github4women/github4women.csproj --configuration Release --output ./publish
