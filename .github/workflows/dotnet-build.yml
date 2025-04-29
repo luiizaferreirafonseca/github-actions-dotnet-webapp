@@ -1,0 +1,70 @@
+name: Workflow de Build/Teste para Projeto .NET
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  schedule:
+    - cron: '0 * * * *'  # Execução a cada hora 
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Fazer checkout do código
+        uses: actions/checkout@v2
+
+      - name: Configurar o .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '7.x'
+
+      - name: Restaurar dependências
+        run: dotnet restore
+
+      - name: Construir a aplicação
+        run: dotnet build --configuration Release
+
+      - name: Formatar o código
+        run: |
+          dotnet tool install --global dotnet-format
+          dotnet format --check
+
+      - name: Gerar documentação Swagger
+        run: |
+          dotnet swagger tofile --output ./swagger.json ./MyApp.dll v1
+
+      - name: Limpar arquivos temporários
+        run: |
+          rm -rf ./bin ./obj
+
+      - name: Verificar qualidade do código
+        run: |
+          dotnet analyze
+
+      - name: Empacotar aplicação para deploy
+        run: |
+          dotnet publish --configuration Release --output ./publish
+
+  test:
+    runs-on: ubuntu-latest
+    needs: build  
+
+    steps:
+      - name: Fazer checkout do código
+        uses: actions/checkout@v2
+
+      - name: Configurar o .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '7.x'
+
+      - name: Restaurar dependências
+        run: dotnet restore
+
+      - name: Executar testes
+        run: dotnet test --configuration Release
