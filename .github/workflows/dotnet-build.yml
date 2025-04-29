@@ -4,14 +4,12 @@ on:
   push:
     branches:
       - main
-  pull_request:
-    branches:
-      - main
   schedule:
-    - cron: '0 * * * *'  # Execução a cada hora 
+    - cron: '0 * * * *'  # Executa a cada hora
 
 jobs:
   build:
+    name: Build do Projeto
     runs-on: ubuntu-latest
 
     steps:
@@ -24,47 +22,35 @@ jobs:
           dotnet-version: '7.x'
 
       - name: Restaurar dependências
-        run: dotnet restore
+        run: dotnet restore github4women/github4women.csproj
 
       - name: Construir a aplicação
-        run: dotnet build --configuration Release
+        run: dotnet build github4women/github4women.csproj --configuration Release
+
+      - name: Executar testes
+        run: dotnet test github4women/github4women.csproj --configuration Release
+
+  publish:
+    name: Empacotar e Verificar Qualidade
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Fazer checkout do código
+        uses: actions/checkout@v2
+
+      - name: Configurar o .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '7.x'
 
       - name: Formatar o código
         run: |
           dotnet tool install --global dotnet-format
-          dotnet format --check
-
-      - name: Gerar documentação Swagger
-        run: |
-          dotnet swagger tofile --output ./swagger.json ./MyApp.dll v1
+          dotnet format github4women/github4women.csproj --check
 
       - name: Limpar arquivos temporários
-        run: |
-          rm -rf ./bin ./obj
-
-      - name: Verificar qualidade do código
-        run: |
-          dotnet analyze
+        run: rm -rf github4women/bin github4women/obj
 
       - name: Empacotar aplicação para deploy
-        run: |
-          dotnet publish --configuration Release --output ./publish
-
-  test:
-    runs-on: ubuntu-latest
-    needs: build  
-
-    steps:
-      - name: Fazer checkout do código
-        uses: actions/checkout@v2
-
-      - name: Configurar o .NET
-        uses: actions/setup-dotnet@v3
-        with:
-          dotnet-version: '7.x'
-
-      - name: Restaurar dependências
-        run: dotnet restore
-
-      - name: Executar testes
-        run: dotnet test --configuration Release
+        run: dotnet publish github4women/github4women.csproj --configuration Release --output ./publish
