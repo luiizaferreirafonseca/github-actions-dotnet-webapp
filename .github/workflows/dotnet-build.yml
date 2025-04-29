@@ -47,7 +47,7 @@ jobs:
       - name: Formatar o código
         run: |
           dotnet tool install --global dotnet-format
-          dotnet format github4women/github4women.csproj --check
+          dotnet format github4women/github4women.csproj --verify-no-changes
 
       - name: Limpar arquivos temporários
         run: rm -rf github4women/bin github4women/obj
